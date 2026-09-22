@@ -1,10 +1,16 @@
-# Release Notes 2023.2.6 - ENTWURF
+# Release Notes 2023.2.6
 
 **Neanderfunk-Firmware auf Basis von Gluon v2023.2.6**
 
-> **Entwurf.** Versionsnummer, Datum und die Links auf den Firmware-Server
-> fehlen noch und werden beim RC eingesetzt. Reihenfolge und Auswahl der
-> Punkte sind zur Diskussion gestellt.
+Version `26091920sta`, veröffentlicht am 22. September 2026.
+
+**Wo es die Firmware gibt:**
+
+- **[Community-Downloader](https://routersoftware.ffnef.de)** - Routermodell
+  auswählen, Gemeinde auswählen, passendes Image herunterladen. Der Weg für
+  alle, die nicht sicher sind, welche der vielen Dateien die richtige ist.
+- **[Firmware-Server](https://firmware.ffnef.de/firmware/stable)** - alle
+  Images nach Gemeinde sortiert, für alle, die genau wissen, was sie suchen.
 
 Diese Fassung löst die Stable vom März 2026 (`26030610sta`) ab, für die es
 keine Release Notes gab. **Sie gilt genauso für Knoten auf der Dezember-Stable
@@ -235,8 +241,10 @@ aus.
 
 Wie bei den vorherigen Releases auch:
 
-- Zuerst geht die Firmware **für Neuinstallationen** auf den Firmware-Server.
-  Wer einen Router neu einrichtet, bekommt ab sofort diese Version.
+- Zuerst geht die Firmware **für Neuinstallationen** auf den
+  [Firmware-Server](https://firmware.ffnef.de/firmware/stable) und in den
+  [Community-Downloader](https://routersoftware.ffnef.de). Wer einen Router neu
+  einrichtet, bekommt ab sofort diese Version.
 - **Freiwillige können sie schon jetzt von Hand einspielen.** Im Browser über
   den Config-Mode wie gewohnt, auf dem Router läuft ja noch die bisherige
   Firmware. Oder per SSH mit dieser Zeile:
@@ -253,7 +261,9 @@ Wie bei den vorherigen Releases auch:
   eingeschaltetem Autoupdater das Update selbst und installieren es - das ist
   die Standardeinstellung. Die bisherige Konfiguration bleibt dabei erhalten,
   der Router kommt von allein zurück.
-- **Die bisherige Version bleibt als Oldstable verfügbar.**
+- **Ältere Versionen bleiben erreichbar.** Sie liegen auf dem
+  [Firmware-Server](https://firmware.ffnef.de/firmware/) in einem eigenen
+  Verzeichnis, benannt nach ihrer Version. Wer zurück muss, findet sie dort.
 
 ## P.S., ganz nebenbei
 

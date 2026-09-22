@@ -138,7 +138,7 @@ Dualband-Router.
 - Auf Geräten mit viel Speicher wurden im Gegenzug die **Netzwerkpuffer
   angehoben**, was bei hohem Durchsatz hilft.
 
-## Der Knoten hilft sich selbst
+## Selbstheilung
 
 - **Die Checks schweigen nicht mehr die erste Stunde.** Bisher liefen sie in
   den ersten 60 Minuten nach einem Neustart gar nicht - wer direkt nach einem
@@ -178,10 +178,10 @@ Dualband-Router.
 
 ## Mesh-VPN
 
-- **Kein Dauerlauf mehr, wenn das Internet fehlt.** Ein Knoten ohne
-  Internetzugang hat bisher ununterbrochen versucht, den VPN-Tunnel
-  aufzubauen, und dabei die CPU belegt. Jetzt wartet er zwischen den
-  Versuchen.
+- **Keine sinnlosen Wiederhol-Versuche mehr, wenn das Internet fehlt.** Ein
+  Knoten ohne Internetzugang hat bisher ununterbrochen versucht, den
+  VPN-Tunnel aufzubauen, und dabei die CPU belegt. Jetzt wartet er zwischen
+  den Versuchen.
 - **Zwei zusätzliche Supernodes sind in der Firmware hinterlegt.** Gehen sie
   in Betrieb, verteilt sich das Mesh-VPN auf mehr Server, ohne dass die Router
   ein Update brauchen.

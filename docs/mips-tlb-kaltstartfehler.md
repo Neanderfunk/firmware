@@ -1,91 +1,99 @@
-# MIPS-TLB: Kaltstartfehler in Kernel 5.15.190 bis 5.15.203
+# MIPS TLB: cold start failure on kernels 5.15.190 to 5.15.203
 
-Befund, Messwerte und die beiden moeglichen Korrekturen. Stand 2026-09-09.
+Findings, measurements and the possible fixes. Last updated 2026-09-23.
 
-## Der Fehler
+## The bug
 
-`35ad7e181541` ("MIPS: mm: tlb-r4k: Uniquify TLB entries on init"), enthalten ab
-5.15.190, ruft `r4k_tlb_uniquify()` in `r4k_tlb_configure()` auf. Die Funktion
-arbeitet auf dem, was der Bootloader im TLB hinterlassen hat. Auf betroffenen
-Boards fuehrt das zum TLB-Shutdown.
+`35ad7e181541` ("MIPS: mm: tlb-r4k: Uniquify TLB entries on init"), present
+from 5.15.190 onwards, calls `r4k_tlb_uniquify()` from `r4k_tlb_configure()`.
+That function operates on whatever the bootloader left behind in the TLB. On
+affected boards this results in a TLB shutdown.
 
-Ort im Bootpfad:
+Where it happens in the boot path:
 
 ```
-init/main.c:1008   vfs_caches_init_early()   letzte Ausgabe vor dem Hang
+init/main.c:1008   vfs_caches_init_early()   last output before the hang
 init/main.c:1009   sort_main_extable()
 init/main.c:1010   trap_init() -> traps.c:2309 tlb_init()
-init/main.c:1011   mm_init()                 wuerde "Memory: ..." drucken
+init/main.c:1011   mm_init()                 would print "Memory: ..."
 ```
 
-**Nur beim Kaltstart.** Nach einem Warmstart ist der TLB bereits uniquifiziert.
-Betroffene Geraete ueberstehen daher beliebig viele sysupgrades und kommen nach
-einem Stromausfall nicht wieder.
+**Cold start only.** After a warm restart the TLB has already been uniquified.
+Affected devices therefore survive any number of sysupgrades and fail to come
+back after a power cut.
 
-`9f048fa48740` (in 5.15.197) behebt es nicht. Bis 5.15.203 kam nichts weiter
-hinzu.
+`9f048fa48740` (in 5.15.197) does not fix it. Nothing further landed up to
+5.15.203. The real fix arrived later, in **5.15.209**, see arm E below.
 
-## Was gemessen ist
+## What has been measured
 
-Kaltstarts ueber eine fernschaltbare Steckdose, Images per TFTP ins RAM geladen,
-der Flash blieb unangetastet.
+Cold starts over a remotely switched mains socket, images loaded over TFTP into
+RAM, so the flash stayed untouched.
 
-| Geraet | SoC | Kern | RAM | ungepatcht | gepatcht |
+| Device | SoC | Core | RAM | unpatched | patched |
 | --- | --- | --- | ---: | --- | --- |
-| TP-Link Archer C25 v1 | QCA956X | 74Kc | 64 MB | **0 von 21** | 21 von 21 |
-| TP-Link TL-WR1043ND v2 | QCA9558 | 74Kc | 64 MB | **0 von 20** | 20 von 20 |
-| TP-Link TL-WDR3600 v1 | AR9344 | 74Kc | 128 MB | 11 von 11 | — |
-| Ubiquiti EdgeRouter X | MT7621 | 1004Kc | 256 MB | 11 von 11 | — |
-| Xiaomi Mi Router 4A Gigabit | MT7621 | 1004Kc | 128 MB | 11 von 11 | — |
+| TP-Link Archer C25 v1 | QCA956X | 74Kc | 64 MB | **0 of 21** | 21 of 21 |
+| TP-Link TL-WR1043ND v2 | QCA9558 | 74Kc | 64 MB | **0 of 20** | 20 of 20 |
+| TP-Link TL-WDR3600 v1 | AR9344 | 74Kc | 128 MB | 11 of 11 | - |
+| Ubiquiti EdgeRouter X | MT7621 | 1004Kc | 256 MB | 11 of 11 | - |
+| Xiaomi Mi Router 4A Gigabit | MT7621 | 1004Kc | 128 MB | 11 of 11 | - |
 
-Beide 5.15.198-Arme stammen aus demselben Bauverzeichnis und unterscheiden sich
-nur um den Patch.
+Both 5.15.198 arms come from the same build tree and differ only by the patch.
 
-**Der CPU-Kern sagt nichts vorher.** Der WDR3600 ist ein 74Kc wie die beiden
-betroffenen Geraete und bootet 11 von 11. Das Verhalten ist je Geraet
-deterministisch, nicht je Kern — passend zum Mechanismus, denn was der
-Bootloader im TLB hinterlaesst, unterscheidet sich je Board.
+**The CPU core predicts nothing.** The WDR3600 is a 74Kc just like the two
+affected devices and boots 11 of 11. The behaviour is deterministic per device,
+not per core, which fits the mechanism: what the bootloader leaves in the TLB
+differs from board to board.
 
-Beobachtung ohne Beleg: beide betroffenen Geraete haben 64 MB RAM, alle nicht
-betroffenen mehr. Mit fuenf Geraeten ist das keine Erklaerung.
+An observation without proof: both affected devices have 64 MB of RAM, all
+unaffected ones have more. With five devices that is not an explanation.
 
-## Reichweite
+## Scope
 
-Ausfall im Maerz 2026, 57 Knoten:
+Outage in March 2026, 57 nodes:
 
-| Anzahl | Target | SoC | Kern |
+| Count | Target | SoC | Core |
 | ---: | --- | --- | --- |
 | 50 | ath79 | qca9563 / qca9558 / ar9344 | 74Kc |
 | 4 | ath79 | ar7241 | 24Kc |
 | 2 | lantiq | vr9 | 34Kc |
 | 1 | ramips | mt7628an | 24KEc |
 
-Kein Nicht-MIPS-Knoten war betroffen. Der Patch liegt deshalb unter
-`target/linux/generic/`: `tlb-r4k.c` wird fuer jeden r4k-MIPS-Kern gebaut, und
-eine Beschraenkung auf ein Target waere geraten.
+No non-MIPS node was affected. The patch therefore lives under
+`target/linux/generic/`: `tlb-r4k.c` is built for every r4k-class MIPS core,
+and restricting it to a single target would be guesswork.
 
-## Zwei moegliche Korrekturen
+## The candidate fixes
 
-Beide beheben denselben Fehler auf demselben Kernel mit demselben Ergebnis.
+All of them address the same bug on the same kernel with the same outcome.
 
-| Arm | | durch | haengt |
+| Arm | | booted | hung |
 |---|---|---:|---:|
-| A | 5.15.198 ohne Patch | 0 | 21 |
-| B | 5.15.198 mit Arm-B-Patch | 21 | 0 |
+| A | 5.15.198, no TLB patch | 0 | 21 |
+| B | 5.15.198 with the arm B patch | 21 | 0 |
 | C | 6.6.144 (OpenWrt 24.10.8) | 21 | 0 |
-| D | 5.15.198, 6.6-Loesung rueckportiert | 20 | 0 |
+| D | 5.15.198, 6.6 solution backported | 20 | 0 |
+| **E** | **5.15.198 with the 5.15.209 backport** | **20** | **0** |
 
-Sie unterscheiden sich im Umfang:
+Arms A to D were measured on the Archer C25 v1 in September 2026. **Arm E was
+measured on 2026-09-23 on the TL-WR1043ND v2**, together with two controls from
+the same rig, which is what makes the run trustworthy: a build without any TLB
+patch hung 3 of 3, and the shipping release `26091920sta`, which carries the
+arm B patch, booted 3 of 3. So the rig detects both states, and none of the 26
+runs was lost to the test setup.
 
-| | Arm B | Arm D |
-|---|---:|---:|
-| geaenderte Codezeilen | 3 | 277 |
-| Hunks | 2 | 7 |
-| Dateien | 1 | 5 |
+They differ in size:
 
-Arm D beruehrt:
+| | Arm B | Arm D | Arm E |
+|---|---:|---:|---:|
+| changed lines of code | 3 | 277 | 330 |
+| hunks | 2 | 7 | 13 |
+| files | 1 | 5 | 6 |
+
+Arm D and arm E touch:
 
 ```
+arch/mips/include/asm/cpu-features.h   (E only)
 arch/mips/include/asm/cpu-info.h
 arch/mips/include/asm/mipsregs.h
 arch/mips/kernel/cpu-probe.c
@@ -93,17 +101,49 @@ arch/mips/kernel/cpu-r3k-probe.c
 arch/mips/mm/tlb-r4k.c
 ```
 
-Arm B aendert nur `tlb-r4k.c`. Arm D fasst zusaetzlich die CPU-Erkennung an und
-faellt damit in den Bootpfad jedes MIPS-Geraets, nicht nur der betroffenen.
-Gemessen sind 20 Kaltstarts auf einem Geraetemodell: genug fuer den Nachweis der
-Funktion, nicht fuer den Ausschluss von Regressionen auf der uebrigen Flotte.
+Arm B only changes `tlb-r4k.c`. Arms D and E also touch CPU detection and thus
+sit in the boot path of every MIPS device, not just the affected ones. What is
+measured is 20 cold starts on one device model: enough to show the fix works,
+not enough to rule out regressions across the rest of the fleet.
 
-Die vier 6.6-Commits, auf denen Arm D beruht: `231ac951faba`, `43fa022b56dc`,
-`591f030449ad`, `811b3dccfb0a`. Der letzte ist eine Neufassung und haengt an
+The four 6.6 commits arm D is based on: `231ac951faba`, `43fa022b56dc`,
+`591f030449ad`, `811b3dccfb0a`. The last one is a rewrite and depends on
 `current_cpu_data.vmbits`, `VPN2_SHIFT`, `struct tlbent`, `memblock_alloc_raw`
-und `slab_is_available` — keines davon in der 5.15-Datei vorhanden.
+and `slab_is_available`, none of which exist in the 5.15 file.
 
-### Arm B im Volltext
+## Arm E: what upstream actually did
+
+**This is the one to use.** Arm E is not our own backport but the stable series
+from **5.15.209**, released 2026-06-01. Five commits:
+
+| # | stable 5.15 | upstream | Title |
+|---|---|---|---|
+| 01 | `da0f6cd551dc` | `841ecc979b18` | MIPS: mm: kmalloc tlb_vpn array to avoid stack overflow |
+| 02 | `2eadfb3b649e` | `01cc50ea5167` | mips: mm: Allocate tlb_vpn array atomically |
+| 03 | `0e39d8dd8762` | `8374c2cb83b9` | MIPS: Always record SEGBITS in cpu_data.vmbits |
+| 04 | `88af0913282f` | `74283cfe2163` | MIPS: mm: Suppress TLB uniquification on EHINV hardware |
+| 05 | `79ad8f65712f` | `540760b77b8f` | MIPS: mm: Rewrite TLB uniquification for the hidden bit feature |
+
+Number 05 carries `Fixes: 9f048fa48740`, that is exactly the commit which this
+document records as insufficient. Its description matches our findings: the
+bootloader hands over the TLB as it was at reset, with the hidden bit set and
+possibly duplicate entries; resetting the page sizes in `r4k_tlb_uniquify()`
+then raises a machine check exception and the boot stops. Rozycki names the
+Mikrotik RB532 as an example. That fits our observation that the failure
+depends on the board and not on the core.
+
+**Note this is not arm D.** Three of arm D's four 6.6 commits do not appear in
+5.15.209 at all.
+
+**Why we missed it:** the analysis stopped at 5.15.203, and OpenWrt 23.05 pins
+`LINUX_VERSION-5.15 = .198`. From inside that tree 5.15.209 is invisible.
+
+The five patches apply cleanly to v5.15.198, in that order, without fuzz and
+without a reject, and no OpenWrt 23.05 patch touches the same files. They live
+in `experiments/mips-tlb-arm-e/` together with an installer script; see the
+README there for how to turn them into a build.
+
+### Arm B in full
 
 ```diff
 From: Freifunk im Neanderland <projekt@neanderfunk.de>
@@ -177,7 +217,7 @@ not on v2025.1, which carries 6.6.119.
  	/* Did I tell you that ARC SUCKS?  */
 ```
 
-### Arm D im Volltext
+### Arm D in full
 
 ```diff
 From: Neanderfunk build environment
@@ -608,11 +648,21 @@ cpu-probe.o build without warnings. NOT tested on hardware.
  /*
 ```
 
-## Ergebnis
+## Result
 
-`patches/kernel/999-mips-tlb-r4k-no-uniquify.patch` nimmt den Aufruf zurueck und stellt
-das Verhalten bis 5.15.189 wieder her. Ueber beide betroffenen Geraete hinweg
-**0 von 41** Kaltstarts ungepatcht gegen **41 von 41** gepatcht.
+`patches/kernel/999-mips-tlb-r4k-no-uniquify.patch` takes the call back out and
+restores the behaviour of 5.15.189. Across both affected devices that is
+**0 of 41** cold starts unpatched against **41 of 41** patched. This is what
+ships today, in `26091920sta`.
 
-Ab Gluon 2025.1.1 kann der Patch weg — dort laeuft 6.6.144, oben mit 21 von 21
-gemessen. Nicht auf v2025.1 selbst, das 6.6.119 traegt.
+**It is no longer the best answer.** Upstream fixed the bug properly in
+5.15.209, and arm E carries that fix: 20 of 20 cold starts on the
+TL-WR1043ND v2, measured against two controls from the same rig. Removing a
+call is a local deviation we have to keep explaining; the upstream rewrite is
+the thing everyone else will be running. The open question is not whether it
+works on the affected boards but whether it is free of regressions on the rest
+of the MIPS fleet, since arms D and E also touch CPU detection. That is a
+question of coverage, not of this measurement.
+
+From Gluon 2025.1.1 onwards the patch can go entirely, since that runs 6.6.144,
+measured above at 21 of 21. Not on v2025.1 itself, which carries 6.6.119.

@@ -34,9 +34,18 @@ haengt und nicht am Kern.
 6.6-Commits (`231ac951faba`, `43fa022b56dc`, `591f030449ad`, `811b3dccfb0a`);
 drei davon kommen in 5.15.209 gar nicht vor.
 
-**Warum es uns nicht aufgefallen ist:** Die Analyse endete bei 5.15.203, und
-OpenWrt 23.05 pinnt `LINUX_VERSION-5.15 = .198`. Aus dem Baum heraus ist
-5.15.209 nicht sichtbar.
+**Warum es uns nicht aufgefallen ist:** Die Analyse endete bei 5.15.203 und
+hat nur in den OpenWrt-Stand geschaut, den **Gluon v2023.2.6** pinnt, und der
+traegt `LINUX_VERSION-5.15 = .198`. Der Zweig `openwrt-23.05` selbst war da
+laengst weiter: Er hat am 11.07.2026 auf 5.15.211 gehoben, samt Korrektur.
+Die fruehere Fassung dieser README behauptete "OpenWrt 23.05 pinnt .198", das
+war falsch, es war der Pin von Gluon.
+
+**Damit ist Arm E beim naechsten Bau ueberholt.** Gluon hat die neue Basis am
+22.09.2026 in den Zweig v2023.2.x uebernommen (freifunk-gluon/gluon#3841),
+Kernel 5.15.211. Wer darauf baut, hat die Korrektur im Kernel und braucht
+weder diesen Backport noch den 999er; der 999er muss dann sogar raus, weil er
+an Code ansetzt, den 5.15.209 umgeschrieben hat.
 
 ## Was geprueft ist
 

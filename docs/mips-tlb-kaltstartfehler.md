@@ -1,6 +1,6 @@
 # MIPS TLB: cold start failure on kernels 5.15.190 to 5.15.203
 
-Findings, measurements and the possible fixes. Last updated 2026-09-23.
+Findings, measurements and the possible fixes. Last updated 2026-09-24.
 
 ## The bug
 
@@ -135,8 +135,18 @@ depends on the board and not on the core.
 **Note this is not arm D.** Three of arm D's four 6.6 commits do not appear in
 5.15.209 at all.
 
-**Why we missed it:** the analysis stopped at 5.15.203, and OpenWrt 23.05 pins
-`LINUX_VERSION-5.15 = .198`. From inside that tree 5.15.209 is invisible.
+**Why we missed it:** the analysis stopped at 5.15.203 and only ever looked
+at the OpenWrt tree that **Gluon v2023.2.6** pins, commit `7f61f96255`, which
+carries `LINUX_VERSION-5.15 = .198`. That was not the state of OpenWrt 23.05
+itself: the `openwrt-23.05` branch went from 5.15.201 all the way to 5.15.211 on
+2026-07-11, fix included, two months before this analysis. An earlier version
+of this document claimed "OpenWrt 23.05 pins .198"; that was wrong, it was
+Gluon's pin.
+
+**Gluon has since caught up.** freifunk-gluon/gluon#3841, merged into the
+`v2023.2.x` branch on 2026-09-22, moves the pin to `33063b4ccf` and thus to
+5.15.211. There is no tagged release with it yet; the branch sits three
+commits after v2023.2.6.
 
 The five patches apply cleanly to v5.15.198, in that order, without fuzz and
 without a reject, and no OpenWrt 23.05 patch touches the same files. They live
@@ -663,6 +673,15 @@ the thing everyone else will be running. The open question is not whether it
 works on the affected boards but whether it is free of regressions on the rest
 of the MIPS fleet, since arms D and E also touch CPU detection. That is a
 question of coverage, not of this measurement.
+
+**What this means for the next build.** Moving to the current `v2023.2.x`
+base brings 5.15.211 and with it the upstream fix. At that point the arm B
+patch **must go**, not just may: it removes a call in `r4k_tlb_configure()`,
+a part of `tlb-r4k.c` that 5.15.209 rewrote, so it either no longer applies or
+would switch off the corrected code. Arm E becomes unnecessary for the same
+reason, the kernel already contains it. Worth one cold start run on the
+TL-WR1043ND v2 with the first build on the new base, as a check that nothing
+else in the bump undoes the fix.
 
 From Gluon 2025.1.1 onwards the patch can go entirely, since that runs 6.6.144,
 measured above at 21 of 21. Not on v2025.1 itself, which carries 6.6.119.

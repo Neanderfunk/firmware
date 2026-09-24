@@ -4,8 +4,12 @@
 #
 # Unser Produktionspatch 999-mips-tlb-r4k-no-uniquify.patch nimmt den Aufruf
 # von r4k_tlb_uniquify() heraus. Upstream hat den Fehler inzwischen richtig
-# behoben, veroeffentlicht in 5.15.209 (01.06.2026). OpenWrt 23.05 pinnt
-# 5.15.198 und bekommt davon nichts mit, deshalb dieser Backport.
+# behoben, veroeffentlicht in 5.15.209 (01.06.2026). Gluon v2023.2.6 pinnt
+# einen aelteren OpenWrt-23.05-Stand mit 5.15.198, deshalb dieser Backport.
+#
+# UEBERHOLT, sobald auf den aktuellen Gluon-Zweig v2023.2.x gebaut wird: Seit
+# freifunk-gluon/gluon#3841 (22.09.2026) bringt der 5.15.211 mit, die
+# Korrektur ist dann schon im Kernel.
 #
 # Der entscheidende Commit ist 540760b77b8f "MIPS: mm: Rewrite TLB
 # uniquification for the hidden bit feature" (Fixes: 9f048fa48740). Er

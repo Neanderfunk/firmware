@@ -219,14 +219,6 @@ anderen D-Link-Geräten, also COVR und DAP. Die Aachener haben eine Anleitung
 dafür geschrieben:
 [Installationsanleitung D-Link M30](https://freifunk-aachen.de/2026/08/17/installationsanleitung-d-link-m30/).
 
-**Einige Zielplattformen sind entfallen.** Wir bauen nicht mehr für Hardware,
-von der es realistischerweise nie einen Knoten bei uns geben wird - darunter
-Allwinner (sunxi), Realtek RTL838x, sehr alte x86-Varianten und generische
-ARM-Systeme. Für die meisten davon kennt der Gluon-Zensus in **ganz
-Deutschland keinen einzigen Knoten**. Das spart Bauzeit, die den Geräten
-zugutekommt, die tatsächlich im Feld stehen. Sollte doch jemand so ein Gerät
-betreiben wollen: melden, dann bauen wir es wieder mit.
-
 ## Kleinere Korrekturen
 
 Dazu eine größere Zahl von Reparaturen, die einzeln aufzuführen wenig brächte.

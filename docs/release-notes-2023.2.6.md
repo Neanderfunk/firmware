@@ -256,20 +256,3 @@ Wie bei den vorherigen Releases auch:
 - **Ältere Versionen bleiben erreichbar.** Sie liegen auf dem
   [Firmware-Server](https://firmware.ffnef.de/firmware/) in einem eigenen
   Verzeichnis, benannt nach ihrer Version. Wer zurück muss, findet sie dort.
-
-## P.S., ganz nebenbei
-
-**Geräte mit 4 MB Flash und 32 MB RAM sind End of Life.** Sie bekommen dieses
-Update nicht und bleiben auf der EOL-Firmware, einer Sackgasse: Der Knoten
-läuft bis auf weiteres, es kommt aber nichts Neues mehr nach. Werden
-Sicherheitslücken bekannt, schließen wir diese Router wie angekündigt vom Netz
-aus.
-
-Wer gerade dabei ist, die letzten davon zu ersetzen: Nehmt die Geräte mit
-**64 MB Arbeitsspeicher oder 8 MB Flash** gleich mit. Diese Version hält sie
-noch am Laufen - dafür sind zram, die entschlackten Hintergrunddienste und die
-sparsameren Skripte oben da -, aber in künftigen Gluon-Versionen werden auch
-sie wegfallen. Das ist keine Drohung, nur Arithmetik.
-
-Und falls das am Gerät scheitert: Wir haben noch ein paar **Genexis EX400** im
-Austauschprogramm liegen. Einfach fragen.
